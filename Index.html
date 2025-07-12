@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Slap the Cube</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: url('images/room.jpeg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      overflow-x: hidden;
+      height: 100%;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 80px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .scene {
+      width: 200px;
+      height: 200px;
+      perspective: 1000px;
+      position: relative;
+    }
+
+    .cube {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 2s ease-out;
+    }
+
+    .cube.animate-right {
+      animation: cubeTiltRight 0.4s ease;
+    }
+
+    .cube.animate-left {
+      animation: cubeTiltLeft 0.4s ease;
+    }
+
+    .cube.jerk-right {
+      animation: cubeJerkRight 0.3s ease;
+    }
+
+    .cube.jerk-left {
+      animation: cubeJerkLeft 0.3s ease;
+    }
+
+    @keyframes cubeTiltRight {
+      0% { transform: scale(1) rotateY(var(--rotY)) rotateX(0deg); }
+      30% { transform: scale(0.95) rotateY(var(--rotY)) rotateX(-5deg); }
+      100% { transform: scale(1) rotateY(var(--rotY)) rotateX(0deg); }
+    }
+
+    @keyframes cubeTiltLeft {
+      0% { transform: scale(1) rotateY(var(--rotY)) rotateX(0deg); }
+      30% { transform: scale(0.95) rotateY(var(--rotY)) rotateX(5deg); }
+      100% { transform: scale(1) rotateY(var(--rotY)) rotateX(0deg); }
+    }
+
+    @keyframes cubeJerkRight {
+      0%, 100% { transform: rotateY(var(--rotY)) translateX(0); }
+      20% { transform: rotateY(var(--rotY)) translateX(10px); }
+      40% { transform: rotateY(var(--rotY)) translateX(-6px); }
+      60% { transform: rotateY(var(--rotY)) translateX(4px); }
+      80% { transform: rotateY(var(--rotY)) translateX(-2px); }
+    }
+
+    @keyframes cubeJerkLeft {
+      0%, 100% { transform: rotateY(var(--rotY)) translateX(0); }
+      20% { transform: rotateY(var(--rotY)) translateX(-10px); }
+      40% { transform: rotateY(var(--rotY)) translateX(6px); }
+      60% { transform: rotateY(var(--rotY)) translateX(-4px); }
+      80% { transform: rotateY(var(--rotY)) translateX(2px); }
+    }
+
+    .face {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      backface-visibility: hidden;
+    }
+
+    .face img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .front  { transform: rotateY(0deg) translateZ(100px); }
+    .back   { transform: rotateY(180deg) translateZ(100px); }
+    .right  { transform: rotateY(90deg) translateZ(100px); }
+    .left   { transform: rotateY(-90deg) translateZ(100px); }
+    .top    { transform: rotateX(90deg) translateZ(100px); }
+    .bottom { transform: rotateX(-90deg) translateZ(100px); }
+
+    .slap-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 140px;
+      height: 140px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      transition: transform 0.2s;
+    }
+
+    .slap-button.active {
+      animation: handSlap 0.3s ease;
+    }
+
+    @keyframes handSlap {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .left-hand {
+      background-image: url('images/lefthand.png');
+    }
+
+    .right-hand {
+      background-image: url('images/righthand.png');
+    }
+
+    #quote {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #fff;
+      min-height: 40px;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+
+    #quote.show {
+      opacity: 1;
+    }
+
+    #score {
+      font-size: 24px;
+      color: #fff;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    #muteBtn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      z-index: 1000;
+    }
+
+    @media (max-width: 480px) {
+      .scene {
+        width: 160px;
+        height: 160px;
+      }
+      .face {
+        width: 160px;
+        height: 160px;
+      }
+      .slap-button {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button id="muteBtn">🔊 Mute</button>
+
+  <div class="container">
+    <button id="leftBtn" class="slap-button left-hand" onclick="slapCube('left')" title="Left Slap"></button>
+    
+    <div class="scene">
+      <div class="cube" id="cube">
+        <div class="face front"><img src="images/front.png" /></div>
+        <div class="face back"><img src="images/back.png" /></div>
+        <div class="face right"><img src="images/right.png" /></div>
+        <div class="face left"><img src="images/left.png" /></div>
+        <div class="face top"><img src="images/top.png" /></div>
+        <div class="face bottom"><img src="images/bottom.png" /></div>
+      </div>
+    </div>
+    
+    <button id="rightBtn" class="slap-button right-hand" onclick="slapCube('right')" title="Right Slap"></button>
+  </div>
+
+  <div id="quote"></div>
+  <div id="score">Slaps: 0</div>
+
+  <audio id="slapSound" src="sounds/slap.mp3" preload="auto"></audio>
+  <audio id="injurySound" src="sounds/injury.mp3" preload="auto"></audio>
+  <audio id="bgSound" src="sounds/rain.mp3" preload="auto" loop></audio>
+
+  <script>
+    const cube = document.getElementById("cube");
+    const quoteBox = document.getElementById("quote");
+    const slapSound = document.getElementById("slapSound");
+    const injurySound = document.getElementById("injurySound");
+    const bgSound = document.getElementById("bgSound");
+    const muteBtn = document.getElementById("muteBtn");
+    const leftBtn = document.getElementById("leftBtn");
+    const rightBtn = document.getElementById("rightBtn");
+    const scoreDisplay = document.getElementById("score");
+
+    const quotes = [
+      "Ouch! That stung! 👋",
+      "Cube got clapped! 😂",
+      "Another blow to geometry!",
+      "You're unstoppable 💥",
+      "Critical Hit! 🎯",
+      "Even cubes cry inside 🧊"
+    ];
+
+    let rotY = 0;
+    let slaps = 0;
+    let muted = false;
+
+    function slapCube(direction) {
+      if (!muted) {
+        slapSound.muted = false;
+        injurySound.muted = false;
+        bgSound.muted = false;
+
+        slapSound.currentTime = 0;
+        slapSound.play();
+
+        injurySound.currentTime = 0;
+        injurySound.play();
+      }
+
+      const btn = direction === "right" ? rightBtn : leftBtn;
+      btn.classList.add("active");
+      setTimeout(() => btn.classList.remove("active"), 300);
+
+      const fullSpins = 3 * 360;
+      const snap = Math.floor(Math.random() * 4) * 90;
+      const amount = fullSpins + snap;
+      rotY += direction === "right" ? -amount : amount;
+
+      cube.style.setProperty("--rotY", `${rotY}deg`);
+      cube.style.transform = `rotateY(${rotY}deg)`;
+
+      cube.classList.remove("animate-left", "animate-right", "jerk-left", "jerk-right");
+      void cube.offsetWidth;
+      cube.classList.add(`animate-${direction}`, `jerk-${direction}`);
+
+      slaps++;
+      scoreDisplay.textContent = `Slaps: ${slaps}`;
+
+      quoteBox.classList.remove("show");
+      quoteBox.textContent = "";
+      setTimeout(() => {
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        quoteBox.textContent = randomQuote;
+        quoteBox.classList.add("show");
+      }, 2000);
+    }
+
+    muteBtn.addEventListener("click", () => {
+      muted = !muted;
+      slapSound.muted = muted;
+      injurySound.muted = muted;
+      bgSound.muted = muted;
+      muteBtn.textContent = muted ? "🔇 Unmute" : "🔊 Mute";
+    });
+
+    // Start rain sound on interaction
+    function startBackgroundSound() {
+      if (!muted && bgSound.paused) bgSound.play();
+    }
+
+    window.addEventListener("touchstart", startBackgroundSound, { once: true });
+    window.addEventListener("click", startBackgroundSound, { once: true });
+  </script>
+</body>
+</html>
